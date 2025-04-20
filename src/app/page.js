@@ -1,6 +1,41 @@
-import Head from "next/head";
+'use client';
+import { useState, useEffect, useRef } from 'react';
+import Head from 'next/head';
 
 export default function Home() {
+  const [userText, setUserText] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+
+  // Setup Speech Recognition on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setUserText(transcript);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    } else {
+      alert('Speech Recognition not supported. Use Chrome.');
+    }
+  }, []);
+
+  const startListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <Head>
@@ -26,27 +61,35 @@ export default function Home() {
         <p className="text-lg text-gray-600 mb-8 max-w-xl">
           Talk it out. Feel better. Anytime, anywhere—powered by state‑of‑the‑art AI voice technology.
         </p>
-     <button className=" bg-blue-600  text-white  px-6 py-3  rounded-lg  shadow-md  hover:shadow-lg  transition-shadow  duration-300 ">
-          Start Session
+
+        {/* Voice Input Button */}
+        <button
+          onClick={startListening}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+        >
+          {isListening ? 'Listening...' : 'Start Session'}
         </button>
+
+        {/* Display Captured Text */}
+        {userText && (
+          <p className="mt-6 text-xl text-center max-w-xl">
+            <strong>You said:</strong> {userText}
+          </p>
+        )}
       </main>
 
       {/* Features Section */}
       <section id="features" className="py-16 bg-white">
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 px-8">
           <div className="flex flex-col items-center">
-            <div className="mb-4 p-4 bg-blue-50 rounded-full">
-              {/* Icon placeholder */}
-            </div>
+            <div className="mb-4 p-4 bg-blue-50 rounded-full" />
             <h3 className="text-xl font-semibold mb-2">24/7 Availability</h3>
             <p className="text-gray-600 text-center">
               Your virtual therapist is always here when you need to talk.
             </p>
           </div>
           <div className="flex flex-col items-center">
-            <div className="mb-4 p-4 bg-blue-50 rounded-full">
-              {/* Icon placeholder */}
-            </div>
+            <div className="mb-4 p-4 bg-blue-50 rounded-full" />
             <h3 className="text-xl font-semibold mb-2">Secure & Private</h3>
             <p className="text-gray-600 text-center">
               End-to-end encryption keeps your conversations confidential.
@@ -58,7 +101,10 @@ export default function Home() {
       {/* Call to Action */}
       <section className="py-12 bg-blue-600 text-white text-center">
         <h3 className="text-2xl font-bold mb-4">Ready to Start?</h3>
-        <button className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition">
+        <button
+          onClick={startListening}
+          className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition"
+        >
           Launch AI Therapist
         </button>
       </section>
