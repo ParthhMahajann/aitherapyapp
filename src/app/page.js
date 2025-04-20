@@ -86,6 +86,14 @@ export default function Home() {
             <strong>You said:</strong> {userText}
           </p>
         )}
+        {loading && ( <p className="mt-4 text-blue-500 text-lg animate-pulse">Thinking...</p>
+          )}
+
+        {aiResponse && ( <div className="mt-6 p-4 bg-white rounded-lg shadow-md max-w-xl text-gray-800 text-left">
+            <strong>Therapist:</strong> {aiResponse}
+          </div>
+    )}
+
       </main>
 
       {/* Features Section */}
