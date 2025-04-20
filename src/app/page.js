@@ -1,4 +1,6 @@
 'use client';
+
+import { askOpenAI } from '@/lib/openai'; 
 import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 
@@ -6,6 +8,9 @@ export default function Home() {
   const [userText, setUserText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
+  const [aiResponse, setAiResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+
 
   // Setup Speech Recognition on mount
   useEffect(() => {
@@ -16,9 +21,14 @@ export default function Home() {
       recognitionRef.current.interimResults = false;
       recognitionRef.current.lang = 'en-US';
 
-      recognitionRef.current.onresult = (event) => {
+      recognitionRef.current.onresult = async (event) => {
         const transcript = event.results[0][0].transcript;
         setUserText(transcript);
+      
+        setLoading(true);
+        const response = await askOpenAI(transcript);
+        setAiResponse(response);
+        setLoading(false);
       };
 
       recognitionRef.current.onend = () => {
